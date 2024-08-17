@@ -26,14 +26,6 @@ class JockoWillinkBot(discord.Client):
         self.TIMEZONE = timezone(timedelta(hours=9))
 
     async def on_ready(self):
-        channel = self.get_channel(self.CHANNEL_ID)
-        if channel and isinstance(
-            channel, discord.TextChannel
-        ):  # Ensure it's a text channel
-            await channel.send(
-                "Jocko Willink reporting for duty. Time to get after it."
-            )
-
         self.loop.create_task(self.alarm_task())
 
     async def alarm_task(self):
@@ -42,12 +34,16 @@ class JockoWillinkBot(discord.Client):
             if now.hour == 7 and now.minute == 30:
                 channel = self.get_channel(self.CHANNEL_ID)
                 if channel and isinstance(channel, discord.TextChannel):
-                    await channel.send("🛎️ It's 07:30 KST! Time to rise and grind! Discipline equals freedom.")
+                    await channel.send(
+                        "🛎️ It's 07:30 KST! Time to rise and grind! Discipline equals freedom."
+                    )
                 await asyncio.sleep(300)
             elif now.hour == 8 and now.minute == 30:
                 channel = self.get_channel(self.CHANNEL_ID)
                 if channel and isinstance(channel, discord.TextChannel):
-                    await channel.send(f"🛎️ It's 08:30 KST! Time to stop the alarm and get after it! No excuses.")
+                    await channel.send(
+                        "🛎️ It's 08:30 KST! Time to stop the alarm and get after it! No excuses."
+                    )
                 await asyncio.sleep(300)
             else:
                 await asyncio.sleep(1)
@@ -70,7 +66,7 @@ class JockoWillinkBot(discord.Client):
                         ).resolve()
                         image_dir.mkdir(parents=True, exist_ok=True)
 
-                        image_path = f"./images/{datetime.now().strftime('%Y%m%d')}/{message.author.display_name}_{attachment.filename}"
+                        image_path = f"./images/{datetime.now().strftime('%Y%m%d')}/{message.author.id}_{attachment.filename}"
                         await attachment.save(Path(image_path).resolve())
 
                         await message.add_reaction("💪")
