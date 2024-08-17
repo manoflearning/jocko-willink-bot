@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from pathlib import Path
 import discord
@@ -22,7 +23,7 @@ class JockoWillinkBot(discord.Client):
             config = json.load(config_file)
         self.TOKEN = config["TOKEN"]
         self.CHANNEL_ID = int(config["CHANNEL_ID"])
-        self.KST = timezone(timedelta(hours=9))
+        self.TIMEZONE = timezone(timedelta(hours=9))
 
     async def on_ready(self):
         channel = self.get_channel(self.CHANNEL_ID)
@@ -33,6 +34,24 @@ class JockoWillinkBot(discord.Client):
                 "Jocko Willink reporting for duty. Time to get after it."
             )
 
+        self.loop.create_task(self.alarm_task())
+
+    async def alarm_task(self):
+        while True:
+            now = datetime.now(self.TIMEZONE)
+            if now.hour == 7 and now.minute == 30:
+                channel = self.get_channel(self.CHANNEL_ID)
+                if channel and isinstance(channel, discord.TextChannel):
+                    await channel.send("🛎️ It's 07:30 KST! Time to rise and grind! Discipline equals freedom.")
+                await asyncio.sleep(300)
+            elif now.hour == 8 and now.minute == 30:
+                channel = self.get_channel(self.CHANNEL_ID)
+                if channel and isinstance(channel, discord.TextChannel):
+                    await channel.send(f"🛎️ It's 08:30 KST! Time to stop the alarm and get after it! No excuses.")
+                await asyncio.sleep(300)
+            else:
+                await asyncio.sleep(1)
+
     async def on_message(self, message: discord.Message):
         if message.channel.id != self.CHANNEL_ID:
             return
@@ -40,7 +59,7 @@ class JockoWillinkBot(discord.Client):
             return
 
         message_time = message.created_at.replace(tzinfo=timezone.utc).astimezone(
-            self.KST
+            self.TIMEZONE
         )
         if is_within_time_range(message_time):
             if message.attachments:
