@@ -1,51 +1,25 @@
+import logging
 from pathlib import Path
+from typing import Optional
 import discord
 import json
 from datetime import datetime, timedelta, timezone
 from PIL import Image
-import piexif
+from PIL.ExifTags import TAGS
 
 
-DATETIME_ORIGINAL_TAG = 36867
-DATETIME_DIGITIZED_TAG = 36868
-DATETIME_TAG = 306
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-def extract_date_from_image(image_path: Path):
-    image = Image.open(image_path)
-    exif_data = image.info.get("exif")
-
-    if not exif_data:
-        print("No EXIF data found in the image.")
-        return None
-
-    try:
-        exif_dict = piexif.load(exif_data)
-    except Exception as e:
-        print(f"Error loading EXIF data: {e}")
-        return None
-
-    # Attempt to extract DateTimeOriginal
-    date_time_original = (
-        exif_dict["0th"].get(DATETIME_ORIGINAL_TAG)
-        or exif_dict["Exif"].get(DATETIME_DIGITIZED_TAG)
-        or exif_dict["0th"].get(DATETIME_TAG)
-    )
-
-    if date_time_original:
-        try:
-            # Decode bytes to string if needed and return the date
-            return (
-                date_time_original.decode("utf-8")
-                if isinstance(date_time_original, bytes)
-                else date_time_original
-            )
-        except Exception as e:
-            print(f"Error decoding date time: {e}")
-            return None
-    else:
-        print("DateTimeOriginal or alternative tags not found.")
-        return None
+def extract_date_from_image(image_path: str) -> Optional[str]:
+    with Image.open(image_path) as img:
+        exif_data = img.getexif()
+        if exif_data:
+            for tag_id, value in exif_data.items():
+                if TAGS.get(tag_id, tag_id) == "DateTimeOriginal":
+                    return value
+    return None
 
 
 def is_within_time_range(dt: datetime):
@@ -83,14 +57,12 @@ class JockoWillinkBot(discord.Client):
                 if attachment.filename.lower().endswith(("png", "jpg", "jpeg")):
                     # download the image
                     image_dir = Path(
-                        f"./images/{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                        f"./images/{datetime.now().strftime('%Y%m%d')}"
                     ).resolve()
                     image_dir.mkdir(parents=True, exist_ok=True)
 
-                    image_path = Path(
-                        f"./images/{datetime.now().strftime('%Y%m%d%H%M%S')}/{message.author.mention}_{attachment.filename}"
-                    ).resolve()
-                    await attachment.save(image_path)
+                    image_path = f"./images/{datetime.now().strftime('%Y%m%d')}/{message.author.display_name}_{attachment.filename}"
+                    await attachment.save(Path(image_path))
 
                     # Extract the date from image metadata
                     image_date_str = extract_date_from_image(image_path)
