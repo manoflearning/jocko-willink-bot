@@ -1,11 +1,8 @@
 import logging
 from pathlib import Path
-from typing import Optional
 import discord
 import json
 from datetime import datetime, timedelta, timezone
-from PIL import Image
-from PIL.ExifTags import TAGS
 
 
 logging.basicConfig(level=logging.INFO)
@@ -42,12 +39,16 @@ class JockoWillinkBot(discord.Client):
         if message.author == self.user:
             return
 
-        message_time = message.created_at.replace(tzinfo=timezone.utc).astimezone(self.KST)
+        message_time = message.created_at.replace(tzinfo=timezone.utc).astimezone(
+            self.KST
+        )
         if is_within_time_range(message_time):
             if message.attachments:
                 for attachment in message.attachments:
                     if attachment.filename.lower().endswith(("png", "jpg", "jpeg")):
-                        image_dir = Path(f"./images/{datetime.now().strftime('%Y%m%d')}").resolve()
+                        image_dir = Path(
+                            f"./images/{datetime.now().strftime('%Y%m%d')}"
+                        ).resolve()
                         image_dir.mkdir(parents=True, exist_ok=True)
 
                         image_path = f"./images/{datetime.now().strftime('%Y%m%d')}/{message.author.display_name}_{attachment.filename}"
