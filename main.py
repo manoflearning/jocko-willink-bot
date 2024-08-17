@@ -1,13 +1,8 @@
 import asyncio
-import logging
 from pathlib import Path
 import discord
 import json
 from datetime import datetime, timedelta, timezone
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 def is_within_time_range(dt: datetime):
