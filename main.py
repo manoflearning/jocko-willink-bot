@@ -72,7 +72,7 @@ async def on_ready():
 
 
 @bot.command()
-async def stat(ctx: commands.Context, args: str):
+async def status(ctx: commands.Context, args: str):
     if args in config:
         status = get_status()
         output = status[config[args]]
