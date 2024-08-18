@@ -43,18 +43,18 @@ def save_status(status: dict):
         json.dump(status, status_file)
 
 
-def add_wakeup(user_id: str, value: dict):
+def add_wakeup(user_id: str, date: str, result: str):
     status = get_status()
     if (
         user_id in status
         and "wakeup" in status[user_id]
         and isinstance(status[user_id]["wakeup"], dict)
     ):
-        status[user_id]["wakeup"].append(value)
+        status[user_id]["wakeup"].update({date: result})
+        save_status(status)
     else:
-        logging.info(f"invalid params for add_wakeup: {user_id}, {value}")
-    save_status(status)
-
+        logging.warning("invalid params for add_wakeup: {user_id}")
+    
 
 # discord bot
 intents = discord.Intents.default()
@@ -137,10 +137,8 @@ async def wakeup(ctx: commands.Context):
 
                     add_wakeup(
                         str(ctx.message.author.id),
-                        {
-                            "date": datetime.now().strftime("%Y-%m-%d"),
-                            "status": "CONFIRMED",
-                        },
+                        datetime.now().strftime("%Y-%m-%d"),
+                        "CONFIRMED",
                     )
                 else:
                     await ctx.message.add_reaction("❌")
