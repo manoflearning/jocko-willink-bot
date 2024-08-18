@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Tuple
 import discord
 from discord.ext import commands
 import json
@@ -34,6 +33,29 @@ def wakeup_channel_id() -> int:
     return int(config["WAKEUP_CHANNEL_ID"])
 
 
+def get_status() -> dict:
+    with open("status.json", "r") as status_file:
+        return json.load(status_file)
+
+
+def save_status(status: dict):
+    with open("status.json", "w") as status_file:
+        json.dump(status, status_file)
+
+
+def add_wakeup(user_id: str, value: dict):
+    status = get_status()
+    if (
+        user_id in status
+        and "wakeup" in status[user_id]
+        and isinstance(status[user_id]["wakeup"], dict)
+    ):
+        status[user_id]["wakeup"].append(value)
+    else:
+        logging.info(f"invalid params for add_wakeup: {user_id}, {value}")
+    save_status(status)
+
+
 # discord bot
 intents = discord.Intents.default()
 intents.messages = True
@@ -50,8 +72,15 @@ async def on_ready():
 
 
 @bot.command()
-async def status(ctx: commands.Context, args: str):
-    assert len(args) == 2
+async def stat(ctx: commands.Context, args: str):
+    if args in config:
+        status = get_status()
+        output = status[config[args]]
+        output = "\n".join([f"{key}: {value}" for key, value in output.items()])
+        output = f"```\n{output}\n```"
+        await ctx.send(f"{output}")
+    else:
+        await ctx.send(f"invalid argument: {args}")
 
 
 # wakeup verification
@@ -104,6 +133,14 @@ async def wakeup(ctx: commands.Context):
                     await ctx.message.add_reaction("💪")
                     await ctx.message.channel.send(
                         f"{ctx.message.author.mention} Wake-up CONFIRMED. Discipline equals freedom. Well done."
+                    )
+
+                    add_wakeup(
+                        str(ctx.message.author.id),
+                        {
+                            "date": datetime.now().strftime("%Y-%m-%d"),
+                            "status": "CONFIRMED",
+                        },
                     )
                 else:
                     await ctx.message.add_reaction("❌")
