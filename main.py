@@ -30,7 +30,7 @@ class JockoWillinkBot(discord.Client):
                 channel = self.get_channel(self.CHANNEL_ID)
                 if channel and isinstance(channel, discord.TextChannel):
                     await channel.send(
-                        "🛎️ It's 07:30 KST! Time to rise and grind! Discipline equals freedom."
+                        "🛎️ It's 07:30 KST! Time to rise and grind! The early hours are where success begins."
                     )
                 await asyncio.sleep(300)
             else:
