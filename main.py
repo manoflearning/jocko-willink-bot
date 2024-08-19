@@ -123,7 +123,7 @@ async def wakeup(ctx: commands.Context):
             for attachment in ctx.message.attachments:
                 if attachment.filename.lower().endswith(("png", "jpg", "jpeg")):
                     image_dir = Path(
-                        f"./images/{datetime.now().strftime('%Y%m%d')}"
+                        f"./images/{datetime.now().strftime('%Y-%m-%d')}"
                     ).resolve()
                     image_dir.mkdir(parents=True, exist_ok=True)
 
